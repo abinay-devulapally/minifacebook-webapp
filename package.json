@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "socket.io": "^4.7.5",
+    "xss": "^1.0.15"
+  }
+}

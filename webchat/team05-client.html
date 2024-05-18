@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniFacebook WebChat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style-with-prefix.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #clock {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            font-family: 'Muli', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            padding: 10px;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        .message-container {
+            margin-bottom: 10px;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #330b0b;
+        }
+
+        .message {
+            margin-left: 10px;
+            background-color: #f3f3f3;
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        function startTime() {
+            document.getElementById('clock').innerHTML = new Date();
+            setTimeout(startTime, 500);
+        }
+
+        if (window.WebSocket) {
+            console.log("HTML5 WebSocket is supported");
+        } else {
+            alert("HTML5 WebSocket is not supported");
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            startTime();
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('username');
+            var socket;
+
+            if (username) {
+                socket = io('http://waph-team05.minifacebook.com:8080', {
+                    query: {
+                        username: username
+                    }
+                });
+
+                socket.on("connect", function () {
+                    console.log('WebSocket connected');
+                });
+
+                socket.on("message", function (msg) {
+                    console.log('Received from server: ' + msg);
+
+                    var parts = msg.split(':');
+                    var username = parts[0];
+                    var message = parts.slice(1).join(':');
+
+                    // Sanitize the message before adding it to the DOM
+                    var sanitizedMessage = sanitizeHTML(message);
+
+                    var messageContainer = document.createElement("div");
+                    messageContainer.classList.add("message-container");
+
+                    var usernameSpan = document.createElement("span");
+                    usernameSpan.classList.add("username");
+                    usernameSpan.textContent = username + " says:";
+                    var messageSpan = document.createElement("span");
+                    messageSpan.classList.add("message");
+
+                    // Use sanitized message
+                    messageSpan.textContent = sanitizedMessage;
+
+                    messageContainer.appendChild(usernameSpan);
+                    messageContainer.appendChild(messageSpan);
+
+                    // Sanitize any other strings that are added to innerHTML
+                    document.getElementById("receivedmessage").innerHTML += sanitizeHTML(username + ": " + message) + "<br>";
+                });
+
+
+                var sanitizeHTML = function (str) {
+                    var temp = document.createElement('div');
+                    temp.textContent = str;
+                    return temp.innerHTML;
+                };
+
+
+                function startTyping() {
+                    if (socket) {
+                        socket.emit("typing", username);
+                        document.getElementById("typing").innerHTML = "<i>" + username + " is typing </i> ";
+                    }
+                }
+
+                function stopTyping() {
+                    document.getElementById("typing").innerHTML = "";
+                }
+
+                document.getElementById("message").addEventListener("keydown", startTyping); // Start typing when a key is pressed
+                document.getElementById("message").addEventListener("blur", stopTyping); // Stop typing when the input field loses focus
+
+                socket.on("disconnect", function () {
+                    console.log('WebSocket closed');
+                });
+            } else {
+                console.error('Error: Username is empty');
+            }
+
+            function doSend(msg) {
+                if (!username) {
+                    console.error('Error: Username is empty');
+                    return;
+                }
+
+                if (socket) {
+                    socket.emit("message", username + ": " + msg);
+                    console.log('Sent to server: ' + msg);
+                }
+            }
+
+            function entertoSend(e) {
+                if (e.keyCode === 13) {  // enter key
+                    doSend(document.getElementById("message").value);
+                    document.getElementById("message").value = "";
+                }
+            }
+
+            document.getElementById("message").addEventListener("keypress", entertoSend);
+        });
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <h2>A Web Chat Server for MiniFacebook</h2>
+        <p>This is a live chat server that allows friends on MiniFacebook to chat across each other.</p>
+    </div>
+    <div id="clock"></div>
+    <input type="text" id="message" size="30" placeholder="Type message and press enter to send" />
+    <hr>
+    <br>
+    <div id="typing"></div>
+    <div id="receivedmessage"></div>
+
+</body>
+
+</html>

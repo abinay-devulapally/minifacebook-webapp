@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MiniFacebook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Muli:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style-with-prefix.css">
+    <style>
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .centered-text {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .info-text {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <h1 class="centered-text">Welcome to MiniFacebook</h1>
+
+        <p class="info-text">Connect with friends and family on MiniFacebook Now!</p>
+
+        <div class="option">
+            <button class="button" onclick="redirectToUserLogin()">User Login</button>
+        </div>
+
+        <div class="option">
+            <button class="button" onclick="redirectToAdminLogin()">Admin Login</button>
+        </div>
+    </div>
+
+    <script>
+        function redirectToUserLogin() {
+            window.location.href = "form.php";
+        }
+
+        function redirectToAdminLogin() {
+            window.location.href = "/admin/form.php";
+        }
+    </script>
+</body>
+
+</html>

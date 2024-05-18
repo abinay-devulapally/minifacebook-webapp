@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function startTime() {
+        document.getElementById('clock').innerHTML = new Date();
+        setTimeout(startTime, 500);
+    }
+    if (window.WebSocket) {
+        console.log("HTML5 WebSocket is supported");
+    } else {
+        alert("HTML5 WebSocket is not supported");
+    }
+    var myWebSocket = io();
+    var myWebSocket = new WebSocket('wss://echo.websocket.org');
+    myWebSocket.onopen = function () {
+        console.log('WebSocket opened');
+    }
+    myWebSocket.on("message", function (msg) {
+        console.log('Received from server: ' + msg/*.data*/);
+        document.getElementById("receivedmessage").innerHTML += msg/*.data*/ + "<br>";
+    });
+    myWebSocket.on("typing", function (msg) {
+        console.log("Received from server: " + msg/*.data*/);
+        setTimeout(function () { document.getElementById("typing").innerHTML = "<br>"; }, 500);
+    });
+    myWebSocket.onclose = function () {
+        console.log('WebSocket closed');
+    }
+    function doSend(msg) {
+        if (myWebSocket) {
+            myWebSocket.emit("Message", msg);
+            console.log('Sent to server: ' + msg);
+        }
+    }
+    function entertoSend(e) {
+        //alert("keycode =" + e.keyCode);
+        if (e.keyCode == 13) {//enter key
+            doSend(document.getElementById("message").value);
+            document.getElementById("message").value = "";
+        }
+    }
+    function sanitizeHTML(str) {
+        var temp = document.createElement("div");
+        temp.textContent = str;
+        return temp.innerHTML;
+    }
+</script>
+
+<body onload="startTime()">
+    Current time: <div id="clock"></div>
+    Type message and enter to send: <input type="text" id="message" size="30" onkeypress="entertoSend(event)" />
+    <br>
+    Message from server:
+    <hr>
+    <div id="receivedmessage"></div>
+    <br>
+    <div id="typing"></div>
+</body>
+
+</html>
