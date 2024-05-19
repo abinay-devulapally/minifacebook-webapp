@@ -1,8 +1,11 @@
 <?php
-$mysqli = new mysqli('localhost', 'waph_team05' /*Database username*/ , 'Pa$$w0rd' /*Database password*/ , 'waph_team' /*Database name*/);
-if ($mysqli->connect_error) {
-    printf('Database connection failed: %s\n', $mysqli->connect_error);
-    return FALSE;
+try {
+    $pdo = new PDO('sqlite:database/minifacebook.sqlite');
+    // Set PDO to throw exceptions on error
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected to SQLite database successfully!";
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
 function addnewuser($username, $name, $email, $phone, $password)
@@ -65,18 +68,20 @@ function addnewsuperuser($username, $name, $email, $phone, $password)
 
 function checklogin_mysql($username, $password)
 {
-    global $mysqli;
-    // $sql = "SELECT * FROM users WHERE username='" . $username . "' ";
-    // $sql = $sql . " AND password = md5('" . $password . "')";
-    $prepared_sql = "SELECT * FROM users WHERE (username = ? OR email = ?) AND password = md5(?) AND isActive = TRUE";
-    $stmt = $mysqli->prepare($prepared_sql);
-    $stmt->bind_param("sss", $username, $username, $password);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows == 1)
+    global $pdo;
+
+    // Execute the SQL query using prepared statements
+    $prepared_sql = "SELECT * FROM users WHERE (username = :username OR email = :email) AND password = :password AND isActive = TRUE";
+    $stmt = $pdo->prepare($prepared_sql);
+    $stmt->execute(array(':username' => $username, ':email' => $username, ':password' => $password));
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($result) == 1)
         return TRUE;
     return FALSE;
 }
+
+
 function check_login_superuser($username, $password)
 {
     global $mysqli;
@@ -90,16 +95,6 @@ function check_login_superuser($username, $password)
     }
     return FALSE;
 }
-// function changepassword($username, $password)
-// {
-//     global $mysqli;
-//     $prepared_sql = "UPDATE users SET password = md5(?) WHERE username=?;";
-//     $stmt = $mysqli->prepare($prepared_sql);
-//     $stmt->bind_param("ss", $password, $username);
-//     if ($stmt->execute())
-//         return TRUE;
-//     return FALSE;
-// }
 
 function changepassword($username, $password)
 {

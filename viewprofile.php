@@ -1,3 +1,8 @@
+<?php
+require "database.php";
+require "session_auth.php";
+?>
+s
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,8 +71,6 @@
 
     <div class="profile-container">
         <?php
-        require "database.php";
-        require "session_auth.php";
         $userData = fetchUserData($_SESSION["username"]);
         ?>
         <h1>Profile Page</h1>
